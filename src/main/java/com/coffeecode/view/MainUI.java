@@ -1,8 +1,10 @@
 package com.coffeecode.view;
 
+import java.awt.GridLayout;
+
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
 
 import com.coffeecode.viewmodel.AlphabetViewModel;
 import com.coffeecode.viewmodel.HillCipherViewModel;
@@ -10,7 +12,7 @@ import com.coffeecode.viewmodel.HillCipherViewModel;
 public class MainUI extends JFrame {
     public MainUI() {
         setTitle("Hill Cipher Visualization");
-        setSize(800, 600);
+        setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         HillCipherViewModel hillCipherViewModel = new HillCipherViewModel();
@@ -18,17 +20,25 @@ public class MainUI extends JFrame {
 
         InputUI inputUI = new InputUI(hillCipherViewModel);
         AlphabetView alphabetView = new AlphabetView(alphabetViewModel);
+        MatrixCalcView matrixCalcView = new MatrixCalcView();
+        TextConvertView textConvertView = new TextConvertView();
+        StepView stepView = new StepView();
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputUI, alphabetView.getMainPanel());
-        splitPane.setDividerLocation(400);
-        add(splitPane);
+        JPanel centerPanel = new JPanel(new GridLayout(3, 1));
+        centerPanel.add(matrixCalcView);
+        centerPanel.add(alphabetView.getMainPanel());
+        centerPanel.add(textConvertView);
+
+        JSplitPane mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputUI, centerPanel);
+        mainSplitPane.setDividerLocation(400);
+
+        JSplitPane outerSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, mainSplitPane, stepView);
+        outerSplitPane.setDividerLocation(800);
+
+        add(outerSplitPane);
     }
 
     public void showUI() {
         setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MainUI().showUI());
     }
 }

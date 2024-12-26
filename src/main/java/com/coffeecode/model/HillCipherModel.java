@@ -3,6 +3,9 @@ package com.coffeecode.model;
 import com.coffeecode.utils.MatrixServicesUtils;
 
 public class HillCipherModel {
+    private HillCipherModel() {
+        throw new IllegalStateException("Utility class: Jangan diinstansiasi");
+    }
 
     private static AlphabetModel alphabetModel = new AlphabetModel();
 
