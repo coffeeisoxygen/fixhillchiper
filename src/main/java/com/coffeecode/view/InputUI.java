@@ -27,8 +27,9 @@ public class InputUI extends JPanel {
     private JButton generateButton;
     private JToggleButton themeToggleButton;
     private JCheckBox sizeCheckBox;
-    private JCheckBox determinantCheckBox;
-    private JCheckBox relativelyPrimeCheckBox;
+    private JCheckBox integerElementsCheckBox;
+    private JCheckBox determinantNonZeroCheckBox;
+    private JCheckBox determinantRelativelyPrimeCheckBox;
     private JCheckBox invertibleCheckBox;
 
     public InputUI(HillCipherViewModel viewModel) {
@@ -97,25 +98,30 @@ public class InputUI extends JPanel {
         gbc.gridwidth = 2;
         add(sizeCheckBox, gbc);
 
-        determinantCheckBox = new JCheckBox("det(K) tidak 0 dan = 1");
-        determinantCheckBox.setEnabled(false);
+        integerElementsCheckBox = new JCheckBox("Elemen-elemen adalah bilangan bulat");
+        integerElementsCheckBox.setEnabled(false);
         gbc.gridy = 4;
-        add(determinantCheckBox, gbc);
+        add(integerElementsCheckBox, gbc);
 
-        relativelyPrimeCheckBox = new JCheckBox("det(K) relatif prima dengan Mod 26");
-        relativelyPrimeCheckBox.setEnabled(false);
+        determinantNonZeroCheckBox = new JCheckBox("det(K) tidak 0");
+        determinantNonZeroCheckBox.setEnabled(false);
         gbc.gridy = 5;
-        add(relativelyPrimeCheckBox, gbc);
+        add(determinantNonZeroCheckBox, gbc);
+
+        determinantRelativelyPrimeCheckBox = new JCheckBox("det(K) relatif prima dengan Mod 26");
+        determinantRelativelyPrimeCheckBox.setEnabled(false);
+        gbc.gridy = 6;
+        add(determinantRelativelyPrimeCheckBox, gbc);
 
         invertibleCheckBox = new JCheckBox("K dapat di Inverse");
         invertibleCheckBox.setEnabled(false);
-        gbc.gridy = 6;
+        gbc.gridy = 7;
         add(invertibleCheckBox, gbc);
 
         // Plain text input
         JLabel plainTextLabel = new JLabel("Plain Text:");
         gbc.gridx = 0;
-        gbc.gridy = 7;
+        gbc.gridy = 8;
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.WEST;
         add(plainTextLabel, gbc);
@@ -128,7 +134,7 @@ public class InputUI extends JPanel {
         // Operation combobox
         JLabel operationLabel = new JLabel("Operation:");
         gbc.gridx = 0;
-        gbc.gridy = 8;
+        gbc.gridy = 9;
         gbc.anchor = GridBagConstraints.WEST;
         add(operationLabel, gbc);
 
@@ -140,7 +146,7 @@ public class InputUI extends JPanel {
         // Generate button
         generateButton = new JButton("Generate");
         gbc.gridx = 1;
-        gbc.gridy = 9;
+        gbc.gridy = 10;
         gbc.anchor = GridBagConstraints.EAST;
         add(generateButton, gbc);
 
@@ -252,16 +258,18 @@ public class InputUI extends JPanel {
 
     private void updateValidationCheckboxes() {
         sizeCheckBox.setSelected(validationViewModel.isSizeValid());
-        determinantCheckBox.setSelected(validationViewModel.isDeterminantValid());
-        relativelyPrimeCheckBox.setSelected(validationViewModel.isDeterminantRelativelyPrime());
+        integerElementsCheckBox.setSelected(validationViewModel.areElementsIntegers());
+        determinantNonZeroCheckBox.setSelected(validationViewModel.isDeterminantNonZero());
+        determinantRelativelyPrimeCheckBox.setSelected(validationViewModel.isDeterminantRelativelyPrime());
         invertibleCheckBox.setSelected(validationViewModel.isInvertible());
     }
 
     private void resetValidation() {
         validationViewModel.resetValidation();
         sizeCheckBox.setSelected(false);
-        determinantCheckBox.setSelected(false);
-        relativelyPrimeCheckBox.setSelected(false);
+        integerElementsCheckBox.setSelected(false);
+        determinantNonZeroCheckBox.setSelected(false);
+        determinantRelativelyPrimeCheckBox.setSelected(false);
         invertibleCheckBox.setSelected(false);
     }
 
@@ -278,8 +286,9 @@ public class InputUI extends JPanel {
             }
             validationViewModel.setKeyMatrix(keyMatrix);
 
-            if (validationViewModel.isSizeValid() && validationViewModel.isDeterminantValid() &&
-                validationViewModel.isDeterminantRelativelyPrime() && validationViewModel.isInvertible()) {
+            if (validationViewModel.isSizeValid() && validationViewModel.areElementsIntegers() &&
+                validationViewModel.isDeterminantNonZero() && validationViewModel.isDeterminantRelativelyPrime() &&
+                validationViewModel.isInvertible()) {
                 viewModel.setKeyMatrix(keyMatrix);
             } else {
                 throw new IllegalArgumentException("Key matrix tidak valid");

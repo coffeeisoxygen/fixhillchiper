@@ -13,13 +13,17 @@ public class MatrixServicesUtils {
     // Fungsi untuk menghitung determinan matriks
     public static double calculateDeterminant(int[][] matrix) {
         RealMatrix realMatrix = convertToRealMatrix(matrix);
-        return new LUDecomposition(realMatrix).getDeterminant();
+        double determinant = new LUDecomposition(realMatrix).getDeterminant();
+        System.out.println("Determinant: " + determinant); // Debug print
+        return determinant;
     }
 
     // Fungsi untuk memeriksa apakah matriks dapat di-invers
     public static boolean isInvertible(int[][] matrix) {
         RealMatrix realMatrix = convertToRealMatrix(matrix);
-        return new LUDecomposition(realMatrix).getDeterminant() != 0;
+        boolean invertible = new LUDecomposition(realMatrix).getDeterminant() != 0;
+        System.out.println("Invertible: " + invertible); // Debug print
+        return invertible;
     }
 
     // Fungsi untuk menghitung invers matriks
@@ -37,7 +41,9 @@ public class MatrixServicesUtils {
 
     // Fungsi untuk memeriksa apakah dua bilangan relatif prima
     public static boolean isRelativelyPrime(int a, int b) {
-        return gcd(a, b) == 1;
+        boolean relativelyPrime = gcd(a, b) == 1;
+        System.out.println("Relatively Prime: " + relativelyPrime); // Debug print
+        return relativelyPrime;
     }
 
     private static int gcd(int a, int b) {
@@ -59,9 +65,21 @@ public class MatrixServicesUtils {
         return new Array2DRowRealMatrix(doubleMatrix);
     }
 
-    // Fungsi untuk memeriksa apakah determinan matriks adalah 1 dan relatif prima dengan 26
+    // Fungsi untuk memeriksa apakah determinan matriks adalah 1
     public static boolean isDeterminantValid(int[][] matrix) {
         double determinant = calculateDeterminant(matrix);
-        return determinant == 1 && isRelativelyPrime((int) determinant, 26);
+        return determinant == 1;
+    }
+
+    // Fungsi untuk memeriksa apakah semua elemen dalam matriks adalah bilangan bulat
+    public static boolean areElementsIntegers(int[][] matrix) {
+        for (int[] row : matrix) {
+            for (int value : row) {
+                if (value != (int) value) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

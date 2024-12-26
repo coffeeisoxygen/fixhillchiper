@@ -40,8 +40,10 @@ public class MatrixModel {
             return false;
         }
         // Validasi tambahan
-        double determinant = MatrixServicesUtils.calculateDeterminant(keyMatrix);
-        if (determinant == 0 || !MatrixServicesUtils.isRelativelyPrime((int) determinant, 26)) {
+        if (!MatrixServicesUtils.areElementsIntegers(keyMatrix)) {
+            return false;
+        }
+        if (!MatrixServicesUtils.isDeterminantValid(keyMatrix)) {
             return false;
         }
         return MatrixServicesUtils.isInvertible(keyMatrix);

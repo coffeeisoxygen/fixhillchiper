@@ -27,29 +27,34 @@ public class ValidationViewModel {
     }
 
     public boolean isSizeValid() {
+        // cek ukuran matriks harus sama dengan ordo blok
         return keyMatrix != null && keyMatrix.length == blockSize;
     }
 
+    public boolean areElementsIntegers() {
+        // cek apakah ini adalah matriks integer bulat
+        return keyMatrix != null && MatrixServicesUtils.areElementsIntegers(keyMatrix);
+    }
+
     public boolean isDeterminantNonZero() {
-        if (keyMatrix == null || !isSizeValid()) return false;
-        double determinant = MatrixServicesUtils.calculateDeterminant(keyMatrix);
-        return determinant != 0;
+        // cek apakah determinan matriks tidak nol
+        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.calculateDeterminant(keyMatrix) != 0;
     }
 
     public boolean isDeterminantRelativelyPrime() {
-        if (keyMatrix == null || !isSizeValid()) return false;
-        double determinant = MatrixServicesUtils.calculateDeterminant(keyMatrix);
-        return MatrixServicesUtils.isRelativelyPrime((int) determinant, 26);
+        // cek apakah determinan matriks relatif prima dengan 26 (jumlah karakter alfabet)
+        return keyMatrix != null && isSizeValid()
+                && MatrixServicesUtils.isRelativelyPrime((int) MatrixServicesUtils.calculateDeterminant(keyMatrix), 26);
     }
 
     public boolean isInvertible() {
-        if (keyMatrix == null || !isSizeValid()) return false;
-        return MatrixServicesUtils.isInvertible(keyMatrix);
+        // cek apakah matriks tersebut dapat diinvert
+        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.isInvertible(keyMatrix);
     }
 
     public boolean isDeterminantValid() {
-        if (keyMatrix == null || !isSizeValid()) return false;
-        return MatrixServicesUtils.isDeterminantValid(keyMatrix);
+        // cek apakah determinan matriks tersebut valid
+        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.isDeterminantValid(keyMatrix);
     }
 
     public void resetValidation() {
