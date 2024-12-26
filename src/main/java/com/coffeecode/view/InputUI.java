@@ -15,11 +15,11 @@ import javax.swing.JToggleButton;
 import javax.swing.SpinnerNumberModel;
 
 import com.coffeecode.viewmodel.HillCipherViewModel;
-import com.coffeecode.viewmodel.ValidationViewModel;
+import com.coffeecode.viewmodel.MatrixValidationViewModel;
 
 public class InputUI extends JPanel {
     private HillCipherViewModel viewModel;
-    private ValidationViewModel validationViewModel;
+    private MatrixValidationViewModel validationViewModel;
     private JSpinner blockSizeSpinner;
     private JPanel keyMatrixPanel;
     private JTextField[][] keyMatrixFields;
@@ -36,7 +36,7 @@ public class InputUI extends JPanel {
 
     public InputUI(HillCipherViewModel viewModel) {
         this.viewModel = viewModel;
-        this.validationViewModel = new ValidationViewModel(2); // Default block size
+        this.validationViewModel = new MatrixValidationViewModel(2); // Default block size
         this.handler = new InputUIHandler(this, viewModel, validationViewModel);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -120,7 +120,7 @@ public class InputUI extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
         add(operationLabel, gbc);
 
-        operationComboBox = new JComboBox<>(new String[]{"Encrypt", "Decrypt"});
+        operationComboBox = new JComboBox<>(new String[] { "Encrypt", "Decrypt" });
         gbc.gridx = 1;
         gbc.anchor = GridBagConstraints.EAST;
         add(operationComboBox, gbc);

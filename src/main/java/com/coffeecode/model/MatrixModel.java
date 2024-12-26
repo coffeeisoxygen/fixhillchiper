@@ -6,11 +6,18 @@ public class MatrixModel {
     private int blockSize;
     private int[][] keyMatrix;
     private boolean isValidKey;
+    private boolean sizeValid;
+    private boolean elementsIntegers;
+    private boolean determinantNonZero;
+    private boolean determinantRelativelyPrime;
+    private boolean invertible;
+    private boolean determinantValid;
 
     public MatrixModel(int blockSize) {
         this.blockSize = blockSize;
         this.keyMatrix = null;
         this.isValidKey = false;
+        resetValidation();
     }
 
     public int getBlockSize() {
@@ -19,6 +26,7 @@ public class MatrixModel {
 
     public void setBlockSize(int blockSize) {
         this.blockSize = blockSize;
+        resetValidation();
     }
 
     public int[][] getKeyMatrix() {
@@ -27,7 +35,7 @@ public class MatrixModel {
 
     public void setKeyMatrix(int[][] keyMatrix) {
         this.keyMatrix = keyMatrix;
-        this.isValidKey = isValidMatrix();
+        validateMatrix();
     }
 
     public boolean isValidKey() {
@@ -35,31 +43,53 @@ public class MatrixModel {
     }
 
     public boolean isSizeValid() {
-        return keyMatrix != null && keyMatrix.length == blockSize;
+        return sizeValid;
     }
 
     public boolean areElementsIntegers() {
-        return keyMatrix != null && MatrixServicesUtils.areElementsIntegers(keyMatrix);
+        return elementsIntegers;
     }
 
     public boolean isDeterminantNonZero() {
-        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.calculateDeterminant(keyMatrix) != 0;
+        return determinantNonZero;
     }
 
     public boolean isDeterminantRelativelyPrime() {
-        return keyMatrix != null && isSizeValid()
-                && MatrixServicesUtils.isRelativelyPrime((int) MatrixServicesUtils.calculateDeterminant(keyMatrix), 26);
+        return determinantRelativelyPrime;
     }
 
     public boolean isInvertible() {
-        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.isInvertible(keyMatrix);
+        return invertible;
     }
 
     public boolean isDeterminantValid() {
-        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.isDeterminantValid(keyMatrix);
+        return determinantValid;
     }
 
-    private boolean isValidMatrix() {
-        return isSizeValid() && areElementsIntegers() && isDeterminantNonZero() && isDeterminantRelativelyPrime() && isInvertible();
+    private void validateMatrix() {
+        if (keyMatrix == null) {
+            resetValidation();
+            return;
+        }
+
+        sizeValid = keyMatrix.length == blockSize;
+        elementsIntegers = MatrixServicesUtils.areElementsIntegers(keyMatrix);
+        double determinant = MatrixServicesUtils.calculateDeterminant(keyMatrix);
+        determinantNonZero = determinant != 0;
+        determinantRelativelyPrime = MatrixServicesUtils.isRelativelyPrime((int) determinant, 26);
+        invertible = MatrixServicesUtils.isInvertible(keyMatrix);
+        determinantValid = Math.abs(determinant - 1.0) < 1e-9; // Toleransi untuk floating point
+
+        isValidKey = sizeValid && elementsIntegers && determinantNonZero && determinantRelativelyPrime && invertible;
+    }
+
+    private void resetValidation() {
+        sizeValid = false;
+        elementsIntegers = false;
+        determinantNonZero = false;
+        determinantRelativelyPrime = false;
+        invertible = false;
+        determinantValid = false;
+        isValidKey = false;
     }
 }

@@ -4,10 +4,17 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 
+import com.coffeecode.view.LatexRender;
+
 public class MatrixServicesUtils {
+    private static LatexRender latexRender;
 
     private MatrixServicesUtils() {
         throw new IllegalStateException("Utility class: Jangan diinstansiasi");
+    }
+
+    public static void setLatexRender(LatexRender render) {
+        latexRender = render;
     }
 
     // Fungsi untuk menghitung determinan matriks
@@ -16,6 +23,9 @@ public class MatrixServicesUtils {
         double determinant = new LUDecomposition(realMatrix).getDeterminant();
         determinant = Math.round(determinant * 1e9) / 1e9; // Pembulatan untuk menghindari masalah floating point
         System.out.println("Determinant: " + determinant); // Debug print
+        if (latexRender != null) {
+            latexRender.renderLatex(MathToString.determinantToLatex(matrix, determinant));
+        }
         return determinant;
     }
 
@@ -36,6 +46,9 @@ public class MatrixServicesUtils {
             for (int j = 0; j < matrix[0].length; j++) {
                 result[i][j] = (int) Math.round(inverseMatrix.getEntry(i, j));
             }
+        }
+        if (latexRender != null) {
+            latexRender.renderLatex(MathToString.inverseMatrixToLatex(matrix, result));
         }
         return result;
     }

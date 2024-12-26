@@ -5,11 +5,11 @@ import java.beans.PropertyChangeSupport;
 
 import com.coffeecode.model.MatrixModel;
 
-public class ValidationViewModel {
+public class MatrixValidationViewModel {
     private MatrixModel matrixModel;
     private PropertyChangeSupport support;
 
-    public ValidationViewModel(int blockSize) {
+    public MatrixValidationViewModel(int blockSize) {
         this.matrixModel = new MatrixModel(blockSize);
         this.support = new PropertyChangeSupport(this);
     }

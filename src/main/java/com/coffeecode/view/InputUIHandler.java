@@ -15,16 +15,17 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import com.coffeecode.viewmodel.HillCipherViewModel;
-import com.coffeecode.viewmodel.ValidationViewModel;
+import com.coffeecode.viewmodel.MatrixValidationViewModel;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
 public class InputUIHandler {
     private InputUI inputUI;
     private HillCipherViewModel viewModel;
-    private ValidationViewModel validationViewModel;
+    private MatrixValidationViewModel validationViewModel;
 
-    public InputUIHandler(InputUI inputUI, HillCipherViewModel viewModel, ValidationViewModel validationViewModel) {
+    public InputUIHandler(InputUI inputUI, HillCipherViewModel viewModel,
+            MatrixValidationViewModel validationViewModel) {
         this.inputUI = inputUI;
         this.viewModel = viewModel;
         this.validationViewModel = validationViewModel;
@@ -62,8 +63,8 @@ public class InputUIHandler {
             validationViewModel.setKeyMatrix(keyMatrix);
 
             if (validationViewModel.isSizeValid() && validationViewModel.areElementsIntegers() &&
-                validationViewModel.isDeterminantNonZero() && validationViewModel.isDeterminantRelativelyPrime() &&
-                validationViewModel.isInvertible()) {
+                    validationViewModel.isDeterminantNonZero() && validationViewModel.isDeterminantRelativelyPrime() &&
+                    validationViewModel.isInvertible()) {
                 viewModel.setKeyMatrix(keyMatrix);
             } else {
                 throw new IllegalArgumentException("Key matrix tidak valid");

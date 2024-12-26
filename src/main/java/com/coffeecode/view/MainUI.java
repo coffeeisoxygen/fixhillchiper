@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+import com.coffeecode.utils.MatrixServicesUtils;
 import com.coffeecode.viewmodel.AlphabetViewModel;
 import com.coffeecode.viewmodel.HillCipherViewModel;
 
@@ -36,6 +37,10 @@ public class MainUI extends JFrame {
         outerSplitPane.setDividerLocation(800);
 
         add(outerSplitPane);
+
+        // Set LatexRender to MatrixServicesUtils
+        LatexRender latexRender = new LatexRender(matrixCalcView);
+        MatrixServicesUtils.setLatexRender(latexRender);
     }
 
     public void showUI() {
