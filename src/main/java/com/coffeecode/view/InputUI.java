@@ -11,6 +11,8 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -74,6 +76,7 @@ public class InputUI extends JPanel {
                 int blockSize = (int) blockSizeSpinner.getValue();
                 validationViewModel.setBlockSize(blockSize);
                 updateKeyMatrixFields();
+                resetValidation();
             }
         });
 
@@ -148,6 +151,15 @@ public class InputUI extends JPanel {
             }
         });
 
+        validationViewModel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("keyMatrix".equals(evt.getPropertyName())) {
+                    updateValidationCheckboxes();
+                }
+            }
+        });
+
         updateKeyMatrixFields(); // Initialize key matrix fields
     }
 
@@ -216,20 +228,41 @@ public class InputUI extends JPanel {
                     keyMatrix[i][j] = Integer.parseInt(keyMatrixFields[i][j].getText());
                 }
             }
-            validationViewModel.setKeyMatrix(keyMatrix);
-
-            // Update key specification checkboxes
-            sizeCheckBox.setSelected(validationViewModel.isSizeValid());
-            determinantCheckBox.setSelected(validationViewModel.isDeterminantNonZero());
-            relativelyPrimeCheckBox.setSelected(validationViewModel.isDeterminantRelativelyPrime());
-            invertibleCheckBox.setSelected(validationViewModel.isInvertible());
+            if (isMatrixFullyFilled(keyMatrix)) {
+                validationViewModel.setKeyMatrix(keyMatrix);
+            } else {
+                resetValidation();
+            }
         } catch (NumberFormatException e) {
             // Handle invalid input
-            sizeCheckBox.setSelected(false);
-            determinantCheckBox.setSelected(false);
-            relativelyPrimeCheckBox.setSelected(false);
-            invertibleCheckBox.setSelected(false);
+            resetValidation();
         }
+    }
+
+    private boolean isMatrixFullyFilled(int[][] matrix) {
+        for (int[] row : matrix) {
+            for (int value : row) {
+                if (value == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private void updateValidationCheckboxes() {
+        sizeCheckBox.setSelected(validationViewModel.isSizeValid());
+        determinantCheckBox.setSelected(validationViewModel.isDeterminantValid());
+        relativelyPrimeCheckBox.setSelected(validationViewModel.isDeterminantRelativelyPrime());
+        invertibleCheckBox.setSelected(validationViewModel.isInvertible());
+    }
+
+    private void resetValidation() {
+        validationViewModel.resetValidation();
+        sizeCheckBox.setSelected(false);
+        determinantCheckBox.setSelected(false);
+        relativelyPrimeCheckBox.setSelected(false);
+        invertibleCheckBox.setSelected(false);
     }
 
     private void onGenerateButtonClicked() {
@@ -245,13 +278,7 @@ public class InputUI extends JPanel {
             }
             validationViewModel.setKeyMatrix(keyMatrix);
 
-            // Update key specification checkboxes
-            sizeCheckBox.setSelected(validationViewModel.isSizeValid());
-            determinantCheckBox.setSelected(validationViewModel.isDeterminantNonZero());
-            relativelyPrimeCheckBox.setSelected(validationViewModel.isDeterminantRelativelyPrime());
-            invertibleCheckBox.setSelected(validationViewModel.isInvertible());
-
-            if (validationViewModel.isSizeValid() && validationViewModel.isDeterminantNonZero() &&
+            if (validationViewModel.isSizeValid() && validationViewModel.isDeterminantValid() &&
                 validationViewModel.isDeterminantRelativelyPrime() && validationViewModel.isInvertible()) {
                 viewModel.setKeyMatrix(keyMatrix);
             } else {

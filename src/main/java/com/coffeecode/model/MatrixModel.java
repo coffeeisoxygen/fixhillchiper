@@ -1,6 +1,6 @@
 package com.coffeecode.model;
 
-import com.coffeecode.utils.MatrixUtils;
+import com.coffeecode.utils.MatrixServicesUtils;
 
 public class MatrixModel {
     private int blockSize;
@@ -40,10 +40,10 @@ public class MatrixModel {
             return false;
         }
         // Validasi tambahan
-        double determinant = MatrixUtils.calculateDeterminant(keyMatrix);
-        if (determinant == 0 || !MatrixUtils.isRelativelyPrime((int) determinant, 26)) {
+        double determinant = MatrixServicesUtils.calculateDeterminant(keyMatrix);
+        if (determinant == 0 || !MatrixServicesUtils.isRelativelyPrime((int) determinant, 26)) {
             return false;
         }
-        return MatrixUtils.isInvertible(keyMatrix);
+        return MatrixServicesUtils.isInvertible(keyMatrix);
     }
 }
