@@ -1,37 +1,22 @@
 package com.coffeecode.view;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.JToggleButton;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import com.coffeecode.viewmodel.HillCipherViewModel;
+import com.coffeecode.viewmodel.ValidationViewModel;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 public class InputUI extends JPanel {
     private HillCipherViewModel viewModel;
+    private ValidationViewModel validationViewModel;
     private JSpinner blockSizeSpinner;
     private JPanel keyMatrixPanel;
     private JTextField[][] keyMatrixFields;
@@ -39,16 +24,19 @@ public class InputUI extends JPanel {
     private JComboBox<String> operationComboBox;
     private JButton generateButton;
     private JToggleButton themeToggleButton;
-    private JCheckBox keyValidCheckBox;
-    private JButton validateKeyButton;
+    private JCheckBox sizeCheckBox;
+    private JCheckBox determinantCheckBox;
+    private JCheckBox relativelyPrimeCheckBox;
+    private JCheckBox invertibleCheckBox;
 
     public InputUI(HillCipherViewModel viewModel) {
         this.viewModel = viewModel;
-        setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(400, 400)); // Set panel size
+        this.validationViewModel = new ValidationViewModel(2); // Default block size
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Header panel with theme toggle button
-        JPanel headerPanel = new JPanel(new GridLayout(1, 2));
+        // Theme toggle button
         themeToggleButton = new JToggleButton("Switch to Dark Mode");
         themeToggleButton.addActionListener(new ActionListener() {
             @Override
@@ -63,106 +51,95 @@ public class InputUI extends JPanel {
                 SwingUtilities.updateComponentTreeUI(SwingUtilities.getWindowAncestor(InputUI.this));
             }
         });
-        headerPanel.add(themeToggleButton);
-
-        // Add header panel to the top
-        add(headerPanel, BorderLayout.NORTH);
-
-        // Main panel for the content
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Padding
-
-        // Block size spinner
-        JLabel blockSizeLabel = new JLabel("Block Size:");
-        blockSizeLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        mainPanel.add(blockSizeLabel, gbc);
-
-        blockSizeSpinner = new JSpinner(new SpinnerNumberModel(2, 2, 4, 1));
-        blockSizeSpinner.setPreferredSize(new Dimension(50, 25));
         gbc.gridx = 1;
-        gbc.anchor = GridBagConstraints.EAST;
-        mainPanel.add(blockSizeSpinner, gbc);
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.NORTHEAST;
+        add(themeToggleButton, gbc);
 
-        // Key matrix panel
-        keyMatrixPanel = new JPanel(new GridLayout(1, 1));
+        // Block size input
+        JLabel blockSizeLabel = new JLabel("Block Size:");
         gbc.gridx = 0;
         gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        mainPanel.add(keyMatrixPanel, gbc);
-        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        add(blockSizeLabel, gbc);
+
+        blockSizeSpinner = new JSpinner(new SpinnerNumberModel(2, 2, 4, 1));
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        add(blockSizeSpinner, gbc);
 
         blockSizeSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
+                int blockSize = (int) blockSizeSpinner.getValue();
+                validationViewModel.setBlockSize(blockSize);
                 updateKeyMatrixFields();
             }
         });
 
-        // Validate key button and checkbox
-        validateKeyButton = new JButton("Validate Key");
-        validateKeyButton.setPreferredSize(new Dimension(120, 40));
-        validateKeyButton.setFont(new Font("Arial", Font.BOLD, 14));
-        validateKeyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onValidateKey();
-            }
-        });
+        // Key matrix input panel
+        keyMatrixPanel = new JPanel(new GridBagLayout());
         gbc.gridx = 0;
         gbc.gridy = 2;
-        mainPanel.add(validateKeyButton, gbc);
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(keyMatrixPanel, gbc);
+        gbc.gridwidth = 1;
 
-        keyValidCheckBox = new JCheckBox("Valid Key");
-        keyValidCheckBox.setEnabled(false); // Disabled to prevent modification
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        mainPanel.add(keyValidCheckBox, gbc);
+        // Key specification checkboxes
+        sizeCheckBox = new JCheckBox("Jumlah kunci = blocksize");
+        sizeCheckBox.setEnabled(false);
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        add(sizeCheckBox, gbc);
+
+        determinantCheckBox = new JCheckBox("det(K) tidak 0 dan = 1");
+        determinantCheckBox.setEnabled(false);
+        gbc.gridy = 4;
+        add(determinantCheckBox, gbc);
+
+        relativelyPrimeCheckBox = new JCheckBox("det(K) relatif prima dengan Mod 26");
+        relativelyPrimeCheckBox.setEnabled(false);
+        gbc.gridy = 5;
+        add(relativelyPrimeCheckBox, gbc);
+
+        invertibleCheckBox = new JCheckBox("K dapat di Inverse");
+        invertibleCheckBox.setEnabled(false);
+        gbc.gridy = 6;
+        add(invertibleCheckBox, gbc);
 
         // Plain text input
         JLabel plainTextLabel = new JLabel("Plain Text:");
-        plainTextLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 7;
+        gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.WEST;
-        mainPanel.add(plainTextLabel, gbc);
+        add(plainTextLabel, gbc);
 
         plainTextField = new JTextField(20);
-        plainTextField.setFont(new Font("Arial", Font.PLAIN, 14));
-        plainTextField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         gbc.gridx = 1;
         gbc.anchor = GridBagConstraints.EAST;
-        mainPanel.add(plainTextField, gbc);
+        add(plainTextField, gbc);
 
         // Operation combobox
         JLabel operationLabel = new JLabel("Operation:");
-        operationLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 8;
         gbc.anchor = GridBagConstraints.WEST;
-        mainPanel.add(operationLabel, gbc);
+        add(operationLabel, gbc);
 
-        operationComboBox = new JComboBox<>(new String[] { "Encrypt", "Decrypt" });
-        operationComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
+        operationComboBox = new JComboBox<>(new String[]{"Encrypt", "Decrypt"});
         gbc.gridx = 1;
         gbc.anchor = GridBagConstraints.EAST;
-        mainPanel.add(operationComboBox, gbc);
+        add(operationComboBox, gbc);
 
         // Generate button
         generateButton = new JButton("Generate");
-        generateButton.setFont(new Font("Arial", Font.BOLD, 14));
-        generateButton.setBackground(new Color(66, 133, 244));
-        generateButton.setForeground(Color.WHITE);
-        generateButton.setFocusPainted(false);
-        generateButton.setPreferredSize(new Dimension(120, 40));
         gbc.gridx = 1;
-        gbc.gridy = 5;
+        gbc.gridy = 9;
         gbc.anchor = GridBagConstraints.EAST;
-        mainPanel.add(generateButton, gbc);
+        add(generateButton, gbc);
 
         generateButton.addActionListener(new ActionListener() {
             @Override
@@ -171,7 +148,6 @@ public class InputUI extends JPanel {
             }
         });
 
-        add(mainPanel, BorderLayout.CENTER);
         updateKeyMatrixFields(); // Initialize key matrix fields
     }
 
@@ -179,18 +155,81 @@ public class InputUI extends JPanel {
         keyMatrixPanel.removeAll();
         int blockSize = (int) blockSizeSpinner.getValue();
         keyMatrixFields = new JTextField[blockSize][blockSize];
-        GridLayout gridLayout = new GridLayout(blockSize, blockSize);
-        keyMatrixPanel.setLayout(gridLayout);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        // Add left curly brace
+        JLabel leftBrace = new JLabel("{");
+        leftBrace.setFont(new Font("Serif", Font.PLAIN, 24));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridheight = blockSize;
+        gbc.anchor = GridBagConstraints.CENTER;
+        keyMatrixPanel.add(leftBrace, gbc);
+
+        // Add key matrix fields
         for (int i = 0; i < blockSize; i++) {
             for (int j = 0; j < blockSize; j++) {
                 keyMatrixFields[i][j] = new JTextField(5);
-                keyMatrixFields[i][j].setFont(new Font("Arial", Font.PLAIN, 14));
-                keyMatrixFields[i][j].setBorder(BorderFactory.createLineBorder(Color.GRAY));
-                keyMatrixPanel.add(keyMatrixFields[i][j]);
+                keyMatrixFields[i][j].getDocument().addDocumentListener(new DocumentListener() {
+                    @Override
+                    public void insertUpdate(DocumentEvent e) {
+                        validateKeyMatrix();
+                    }
+
+                    @Override
+                    public void removeUpdate(DocumentEvent e) {
+                        validateKeyMatrix();
+                    }
+
+                    @Override
+                    public void changedUpdate(DocumentEvent e) {
+                        validateKeyMatrix();
+                    }
+                });
+                gbc.gridx = j + 1;
+                gbc.gridy = i;
+                gbc.gridheight = 1;
+                keyMatrixPanel.add(keyMatrixFields[i][j], gbc);
             }
         }
+
+        // Add right curly brace
+        JLabel rightBrace = new JLabel("}");
+        rightBrace.setFont(new Font("Serif", Font.PLAIN, 24));
+        gbc.gridx = blockSize + 1;
+        gbc.gridy = 0;
+        gbc.gridheight = blockSize;
+        gbc.anchor = GridBagConstraints.CENTER;
+        keyMatrixPanel.add(rightBrace, gbc);
+
         keyMatrixPanel.revalidate();
         keyMatrixPanel.repaint();
+    }
+
+    private void validateKeyMatrix() {
+        try {
+            int blockSize = (int) blockSizeSpinner.getValue();
+            int[][] keyMatrix = new int[blockSize][blockSize];
+            for (int i = 0; i < blockSize; i++) {
+                for (int j = 0; j < blockSize; j++) {
+                    keyMatrix[i][j] = Integer.parseInt(keyMatrixFields[i][j].getText());
+                }
+            }
+            validationViewModel.setKeyMatrix(keyMatrix);
+
+            // Update key specification checkboxes
+            sizeCheckBox.setSelected(validationViewModel.isSizeValid());
+            determinantCheckBox.setSelected(validationViewModel.isDeterminantNonZero());
+            relativelyPrimeCheckBox.setSelected(validationViewModel.isDeterminantRelativelyPrime());
+            invertibleCheckBox.setSelected(validationViewModel.isInvertible());
+        } catch (NumberFormatException e) {
+            // Handle invalid input
+            sizeCheckBox.setSelected(false);
+            determinantCheckBox.setSelected(false);
+            relativelyPrimeCheckBox.setSelected(false);
+            invertibleCheckBox.setSelected(false);
+        }
     }
 
     private void onGenerateButtonClicked() {
@@ -204,7 +243,20 @@ public class InputUI extends JPanel {
                     keyMatrix[i][j] = Integer.parseInt(keyMatrixFields[i][j].getText());
                 }
             }
-            viewModel.setKeyMatrix(keyMatrix);
+            validationViewModel.setKeyMatrix(keyMatrix);
+
+            // Update key specification checkboxes
+            sizeCheckBox.setSelected(validationViewModel.isSizeValid());
+            determinantCheckBox.setSelected(validationViewModel.isDeterminantNonZero());
+            relativelyPrimeCheckBox.setSelected(validationViewModel.isDeterminantRelativelyPrime());
+            invertibleCheckBox.setSelected(validationViewModel.isInvertible());
+
+            if (validationViewModel.isSizeValid() && validationViewModel.isDeterminantNonZero() &&
+                validationViewModel.isDeterminantRelativelyPrime() && validationViewModel.isInvertible()) {
+                viewModel.setKeyMatrix(keyMatrix);
+            } else {
+                throw new IllegalArgumentException("Key matrix tidak valid");
+            }
 
             String plainText = plainTextField.getText();
             viewModel.setPlainText(plainText);
@@ -221,10 +273,5 @@ public class InputUI extends JPanel {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    private void onValidateKey() {
-        // Logic to validate key matrix
-        keyValidCheckBox.setSelected(true); // Assume valid for this example
     }
 }

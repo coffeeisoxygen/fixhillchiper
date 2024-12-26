@@ -5,10 +5,12 @@ import com.coffeecode.utils.MatrixUtils;
 public class MatrixModel {
     private int blockSize;
     private int[][] keyMatrix;
+    private boolean isValidKey;
 
     public MatrixModel(int blockSize) {
         this.blockSize = blockSize;
         this.keyMatrix = null;
+        this.isValidKey = false;
     }
 
     public int getBlockSize() {
@@ -25,9 +27,14 @@ public class MatrixModel {
 
     public void setKeyMatrix(int[][] keyMatrix) {
         this.keyMatrix = keyMatrix;
+        this.isValidKey = isValidMatrix();
     }
 
-    public boolean isValidMatrix() {
+    public boolean isValidKey() {
+        return isValidKey;
+    }
+
+    private boolean isValidMatrix() {
         // Cek determinan dan ukuran matrix valid
         if (keyMatrix == null || keyMatrix.length != blockSize) {
             return false;

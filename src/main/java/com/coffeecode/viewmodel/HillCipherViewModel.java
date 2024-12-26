@@ -1,6 +1,8 @@
 package com.coffeecode.viewmodel;
 
-import com.coffeecode.model.*;
+import com.coffeecode.model.HillCipherModel;
+import com.coffeecode.model.MatrixModel;
+import com.coffeecode.model.TextModel;
 
 public class HillCipherViewModel {
     private MatrixModel matrixModel;
@@ -21,9 +23,13 @@ public class HillCipherViewModel {
 
     public void setKeyMatrix(int[][] keyMatrix) {
         matrixModel.setKeyMatrix(keyMatrix);
-        if (!matrixModel.isValidMatrix()) {
+        if (!matrixModel.isValidKey()) {
             throw new IllegalArgumentException("Key matrix tidak valid");
         }
+    }
+
+    public boolean isKeyValid() {
+        return matrixModel.isValidKey();
     }
 
     public void setPlainText(String plainText) {
