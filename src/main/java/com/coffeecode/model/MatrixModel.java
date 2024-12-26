@@ -34,18 +34,32 @@ public class MatrixModel {
         return isValidKey;
     }
 
+    public boolean isSizeValid() {
+        return keyMatrix != null && keyMatrix.length == blockSize;
+    }
+
+    public boolean areElementsIntegers() {
+        return keyMatrix != null && MatrixServicesUtils.areElementsIntegers(keyMatrix);
+    }
+
+    public boolean isDeterminantNonZero() {
+        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.calculateDeterminant(keyMatrix) != 0;
+    }
+
+    public boolean isDeterminantRelativelyPrime() {
+        return keyMatrix != null && isSizeValid()
+                && MatrixServicesUtils.isRelativelyPrime((int) MatrixServicesUtils.calculateDeterminant(keyMatrix), 26);
+    }
+
+    public boolean isInvertible() {
+        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.isInvertible(keyMatrix);
+    }
+
+    public boolean isDeterminantValid() {
+        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.isDeterminantValid(keyMatrix);
+    }
+
     private boolean isValidMatrix() {
-        // Cek determinan dan ukuran matrix valid
-        if (keyMatrix == null || keyMatrix.length != blockSize) {
-            return false;
-        }
-        // Validasi tambahan
-        if (!MatrixServicesUtils.areElementsIntegers(keyMatrix)) {
-            return false;
-        }
-        if (!MatrixServicesUtils.isDeterminantValid(keyMatrix)) {
-            return false;
-        }
-        return MatrixServicesUtils.isInvertible(keyMatrix);
+        return isSizeValid() && areElementsIntegers() && isDeterminantNonZero() && isDeterminantRelativelyPrime() && isInvertible();
     }
 }

@@ -1,20 +1,21 @@
 package com.coffeecode.view;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.SpinnerNumberModel;
+
 import com.coffeecode.viewmodel.HillCipherViewModel;
 import com.coffeecode.viewmodel.ValidationViewModel;
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatLightLaf;
-
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 public class InputUI extends JPanel {
     private HillCipherViewModel viewModel;
@@ -25,35 +26,25 @@ public class InputUI extends JPanel {
     private JTextField plainTextField;
     private JComboBox<String> operationComboBox;
     private JButton generateButton;
-    private JToggleButton themeToggleButton;
+    JToggleButton themeToggleButton;
     private JCheckBox sizeCheckBox;
     private JCheckBox integerElementsCheckBox;
     private JCheckBox determinantNonZeroCheckBox;
     private JCheckBox determinantRelativelyPrimeCheckBox;
     private JCheckBox invertibleCheckBox;
+    private InputUIHandler handler;
 
     public InputUI(HillCipherViewModel viewModel) {
         this.viewModel = viewModel;
         this.validationViewModel = new ValidationViewModel(2); // Default block size
+        this.handler = new InputUIHandler(this, viewModel, validationViewModel);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
 
         // Theme toggle button
         themeToggleButton = new JToggleButton("Switch to Dark Mode");
-        themeToggleButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (themeToggleButton.isSelected()) {
-                    FlatDarkLaf.setup();
-                    themeToggleButton.setText("Switch to Light Mode");
-                } else {
-                    FlatLightLaf.setup();
-                    themeToggleButton.setText("Switch to Dark Mode");
-                }
-                SwingUtilities.updateComponentTreeUI(SwingUtilities.getWindowAncestor(InputUI.this));
-            }
-        });
+        themeToggleButton.addActionListener(handler::handleThemeToggle);
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.NORTHEAST;
@@ -67,19 +58,10 @@ public class InputUI extends JPanel {
         add(blockSizeLabel, gbc);
 
         blockSizeSpinner = new JSpinner(new SpinnerNumberModel(2, 2, 4, 1));
+        blockSizeSpinner.addChangeListener(handler::handleBlockSizeChange);
         gbc.gridx = 1;
         gbc.anchor = GridBagConstraints.EAST;
         add(blockSizeSpinner, gbc);
-
-        blockSizeSpinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int blockSize = (int) blockSizeSpinner.getValue();
-                validationViewModel.setBlockSize(blockSize);
-                updateKeyMatrixFields();
-                resetValidation();
-            }
-        });
 
         // Key matrix input panel
         keyMatrixPanel = new JPanel(new GridBagLayout());
@@ -145,169 +127,58 @@ public class InputUI extends JPanel {
 
         // Generate button
         generateButton = new JButton("Generate");
+        generateButton.addActionListener(handler::handleGenerateButtonClick);
         gbc.gridx = 1;
         gbc.gridy = 10;
         gbc.anchor = GridBagConstraints.EAST;
         add(generateButton, gbc);
 
-        generateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onGenerateButtonClicked();
-            }
-        });
+        validationViewModel.addPropertyChangeListener(handler::handlePropertyChange);
 
-        validationViewModel.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("keyMatrix".equals(evt.getPropertyName())) {
-                    updateValidationCheckboxes();
-                }
-            }
-        });
-
-        updateKeyMatrixFields(); // Initialize key matrix fields
+        handler.updateKeyMatrixFields(); // Initialize key matrix fields
     }
 
-    private void updateKeyMatrixFields() {
-        keyMatrixPanel.removeAll();
-        int blockSize = (int) blockSizeSpinner.getValue();
-        keyMatrixFields = new JTextField[blockSize][blockSize];
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-
-        // Add left curly brace
-        JLabel leftBrace = new JLabel("{");
-        leftBrace.setFont(new Font("Serif", Font.PLAIN, 24));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridheight = blockSize;
-        gbc.anchor = GridBagConstraints.CENTER;
-        keyMatrixPanel.add(leftBrace, gbc);
-
-        // Add key matrix fields
-        for (int i = 0; i < blockSize; i++) {
-            for (int j = 0; j < blockSize; j++) {
-                keyMatrixFields[i][j] = new JTextField(5);
-                keyMatrixFields[i][j].getDocument().addDocumentListener(new DocumentListener() {
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        validateKeyMatrix();
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        validateKeyMatrix();
-                    }
-
-                    @Override
-                    public void changedUpdate(DocumentEvent e) {
-                        validateKeyMatrix();
-                    }
-                });
-                gbc.gridx = j + 1;
-                gbc.gridy = i;
-                gbc.gridheight = 1;
-                keyMatrixPanel.add(keyMatrixFields[i][j], gbc);
-            }
-        }
-
-        // Add right curly brace
-        JLabel rightBrace = new JLabel("}");
-        rightBrace.setFont(new Font("Serif", Font.PLAIN, 24));
-        gbc.gridx = blockSize + 1;
-        gbc.gridy = 0;
-        gbc.gridheight = blockSize;
-        gbc.anchor = GridBagConstraints.CENTER;
-        keyMatrixPanel.add(rightBrace, gbc);
-
-        keyMatrixPanel.revalidate();
-        keyMatrixPanel.repaint();
+    public JSpinner getBlockSizeSpinner() {
+        return blockSizeSpinner;
     }
 
-    private void validateKeyMatrix() {
-        try {
-            int blockSize = (int) blockSizeSpinner.getValue();
-            int[][] keyMatrix = new int[blockSize][blockSize];
-            for (int i = 0; i < blockSize; i++) {
-                for (int j = 0; j < blockSize; j++) {
-                    keyMatrix[i][j] = Integer.parseInt(keyMatrixFields[i][j].getText());
-                }
-            }
-            if (isMatrixFullyFilled(keyMatrix)) {
-                validationViewModel.setKeyMatrix(keyMatrix);
-            } else {
-                resetValidation();
-            }
-        } catch (NumberFormatException e) {
-            // Handle invalid input
-            resetValidation();
-        }
+    public JPanel getKeyMatrixPanel() {
+        return keyMatrixPanel;
     }
 
-    private boolean isMatrixFullyFilled(int[][] matrix) {
-        for (int[] row : matrix) {
-            for (int value : row) {
-                if (value == 0) {
-                    return false;
-                }
-            }
-        }
-        return true;
+    public JTextField[][] getKeyMatrixFields() {
+        return keyMatrixFields;
     }
 
-    private void updateValidationCheckboxes() {
-        sizeCheckBox.setSelected(validationViewModel.isSizeValid());
-        integerElementsCheckBox.setSelected(validationViewModel.areElementsIntegers());
-        determinantNonZeroCheckBox.setSelected(validationViewModel.isDeterminantNonZero());
-        determinantRelativelyPrimeCheckBox.setSelected(validationViewModel.isDeterminantRelativelyPrime());
-        invertibleCheckBox.setSelected(validationViewModel.isInvertible());
+    public void setKeyMatrixFields(JTextField[][] keyMatrixFields) {
+        this.keyMatrixFields = keyMatrixFields;
     }
 
-    private void resetValidation() {
-        validationViewModel.resetValidation();
-        sizeCheckBox.setSelected(false);
-        integerElementsCheckBox.setSelected(false);
-        determinantNonZeroCheckBox.setSelected(false);
-        determinantRelativelyPrimeCheckBox.setSelected(false);
-        invertibleCheckBox.setSelected(false);
+    public JCheckBox getSizeCheckBox() {
+        return sizeCheckBox;
     }
 
-    private void onGenerateButtonClicked() {
-        try {
-            int blockSize = (int) blockSizeSpinner.getValue();
-            viewModel.setBlockSize(blockSize);
+    public JCheckBox getIntegerElementsCheckBox() {
+        return integerElementsCheckBox;
+    }
 
-            int[][] keyMatrix = new int[blockSize][blockSize];
-            for (int i = 0; i < blockSize; i++) {
-                for (int j = 0; j < blockSize; j++) {
-                    keyMatrix[i][j] = Integer.parseInt(keyMatrixFields[i][j].getText());
-                }
-            }
-            validationViewModel.setKeyMatrix(keyMatrix);
+    public JCheckBox getDeterminantNonZeroCheckBox() {
+        return determinantNonZeroCheckBox;
+    }
 
-            if (validationViewModel.isSizeValid() && validationViewModel.areElementsIntegers() &&
-                validationViewModel.isDeterminantNonZero() && validationViewModel.isDeterminantRelativelyPrime() &&
-                validationViewModel.isInvertible()) {
-                viewModel.setKeyMatrix(keyMatrix);
-            } else {
-                throw new IllegalArgumentException("Key matrix tidak valid");
-            }
+    public JCheckBox getDeterminantRelativelyPrimeCheckBox() {
+        return determinantRelativelyPrimeCheckBox;
+    }
 
-            String plainText = plainTextField.getText();
-            viewModel.setPlainText(plainText);
+    public JCheckBox getInvertibleCheckBox() {
+        return invertibleCheckBox;
+    }
 
-            String operation = (String) operationComboBox.getSelectedItem();
-            String result;
-            if ("Encrypt".equals(operation)) {
-                result = viewModel.encryptText();
-            } else {
-                result = viewModel.decryptText();
-            }
+    public JTextField getPlainTextField() {
+        return plainTextField;
+    }
 
-            JOptionPane.showMessageDialog(this, "Result: " + result);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+    public JComboBox<String> getOperationComboBox() {
+        return operationComboBox;
     }
 }

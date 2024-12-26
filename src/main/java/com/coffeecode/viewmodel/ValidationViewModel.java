@@ -3,62 +3,53 @@ package com.coffeecode.viewmodel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-import com.coffeecode.utils.MatrixServicesUtils;
+import com.coffeecode.model.MatrixModel;
 
 public class ValidationViewModel {
-    private int blockSize;
-    private int[][] keyMatrix;
+    private MatrixModel matrixModel;
     private PropertyChangeSupport support;
 
     public ValidationViewModel(int blockSize) {
-        this.blockSize = blockSize;
-        this.keyMatrix = null;
+        this.matrixModel = new MatrixModel(blockSize);
         this.support = new PropertyChangeSupport(this);
     }
 
     public void setBlockSize(int blockSize) {
-        this.blockSize = blockSize;
+        matrixModel.setBlockSize(blockSize);
         support.firePropertyChange("blockSize", null, blockSize);
     }
 
     public void setKeyMatrix(int[][] keyMatrix) {
-        this.keyMatrix = keyMatrix;
+        matrixModel.setKeyMatrix(keyMatrix);
         support.firePropertyChange("keyMatrix", null, keyMatrix);
     }
 
     public boolean isSizeValid() {
-        // cek ukuran matriks harus sama dengan ordo blok
-        return keyMatrix != null && keyMatrix.length == blockSize;
+        return matrixModel.isSizeValid();
     }
 
     public boolean areElementsIntegers() {
-        // cek apakah ini adalah matriks integer bulat
-        return keyMatrix != null && MatrixServicesUtils.areElementsIntegers(keyMatrix);
+        return matrixModel.areElementsIntegers();
     }
 
     public boolean isDeterminantNonZero() {
-        // cek apakah determinan matriks tidak nol
-        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.calculateDeterminant(keyMatrix) != 0;
+        return matrixModel.isDeterminantNonZero();
     }
 
     public boolean isDeterminantRelativelyPrime() {
-        // cek apakah determinan matriks relatif prima dengan 26 (jumlah karakter alfabet)
-        return keyMatrix != null && isSizeValid()
-                && MatrixServicesUtils.isRelativelyPrime((int) MatrixServicesUtils.calculateDeterminant(keyMatrix), 26);
+        return matrixModel.isDeterminantRelativelyPrime();
     }
 
     public boolean isInvertible() {
-        // cek apakah matriks tersebut dapat diinvert
-        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.isInvertible(keyMatrix);
+        return matrixModel.isInvertible();
     }
 
     public boolean isDeterminantValid() {
-        // cek apakah determinan matriks tersebut valid
-        return keyMatrix != null && isSizeValid() && MatrixServicesUtils.isDeterminantValid(keyMatrix);
+        return matrixModel.isDeterminantValid();
     }
 
     public void resetValidation() {
-        this.keyMatrix = null;
+        matrixModel.setKeyMatrix(null);
         support.firePropertyChange("keyMatrix", null, null);
     }
 
