@@ -63,6 +63,5 @@ public class AlphabetModel {
         // memgatur ulang baris dan kolom ke nilai default
         rows = 6;
         columns = 5;
-
     }
 }

@@ -14,6 +14,7 @@ public class MatrixServicesUtils {
     public static double calculateDeterminant(int[][] matrix) {
         RealMatrix realMatrix = convertToRealMatrix(matrix);
         double determinant = new LUDecomposition(realMatrix).getDeterminant();
+        determinant = Math.round(determinant * 1e9) / 1e9; // Pembulatan untuk menghindari masalah floating point
         System.out.println("Determinant: " + determinant); // Debug print
         return determinant;
     }
@@ -68,7 +69,7 @@ public class MatrixServicesUtils {
     // Fungsi untuk memeriksa apakah determinan matriks adalah 1
     public static boolean isDeterminantValid(int[][] matrix) {
         double determinant = calculateDeterminant(matrix);
-        return determinant == 1;
+        return Math.abs(determinant - 1.0) < 1e-9; // Toleransi untuk floating point
     }
 
     // Fungsi untuk memeriksa apakah semua elemen dalam matriks adalah bilangan bulat
