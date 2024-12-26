@@ -37,7 +37,9 @@ public class HillCipherModel {
         StringBuilder text = new StringBuilder();
         for (int[] row : numericMatrix) {
             for (int value : row) {
-                text.append(alphabetModel.getAlphabetTable().get(value % 27));
+                // Pastikan nilai berada dalam rentang yang benar sebelum melakukan mapping
+                int adjustedValue = (value % 27 + 27) % 27;
+                text.append(alphabetModel.getAlphabetTable().get(adjustedValue));
             }
         }
         return text.toString();
